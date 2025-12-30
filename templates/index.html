@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Akıllı Servis Sistemi</title>
+  <style>
+    body { font-family: Arial; background: #f5f5f5; padding: 20px; }
+    h1 { color: #2b2b2b; }
+    table { border-collapse: collapse; width: 60%; margin-top: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background-color: #007BFF; color: white; }
+    .yesil { background-color: #d4edda; }
+    .kirmizi { background-color: #f8d7da; }
+    a.button {
+      display: inline-block; margin-top: 15px; padding: 10px 20px;
+      background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;
+    }
+    a.button:hover { background-color: #0056b3; }
+    img { border: 2px solid #007BFF; margin-top: 20px; width: 640px; height: 480px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <h1> Akıllı Servis Sistemi</h1>
+
+  <img src="{{ url_for('video_feed') }}" alt="Canlı Kamera Akışı">
+
+  <table id="students-table">
+    <tr>
+      <th>İsim</th>
+      <th>Durum</th>
+      <th>Saat</th>
+    </tr>
+    {% for name, servis,saat in students %}
+    <tr class="{{ 'yesil' if servis == 'Bindi' else 'kirmizi' }}">
+      <td>{{ name }}</td>
+      <td>{{ servis }}</td>
+      <td>{{ saat }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{{ url_for('reset') }}" class="button">Günü Sıfırla</a>
+
+  <script>
+    // Tabloyu arka planda güncelle
+    async function updateTable() {
+      const response = await fetch('/data');
+      const data = await response.json();
+      const table = document.getElementById('students-table');
+
+      // Tablonun eski satırlarını sil (başlık hariç)
+      while (table.rows.length > 1) {
+        table.deleteRow(1);
+      }
+
+      // Yeni satırları ekle
+      data.forEach(([name, servis,saat]) => {
+        const row = table.insertRow();
+        const nameCell = row.insertCell(0);
+        const servisCell = row.insertCell(1);
+        const saatCell = row.insertCell(2);
+        nameCell.textContent = name;
+        servisCell.textContent = servis;
+        saatCell.textContent = saat;
+        row.className = (servis === "Bindi") ? "yesil" : "kirmizi";
+      });
+    }
+
+    // Her 2 saniyede bir tabloyu yenile
+    setInterval(updateTable, 2000);
+  </script>
+</body>
+</html>
